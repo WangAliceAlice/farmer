@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>配肥和配药管理</title>
+    <link href="https://unpkg.com/element-ui/lib/theme-chalk/index.css" rel="stylesheet">
+</head>
+<body>
+<div id="app">
+    <el-menu :default-active="activeIndex" class="el-menu" mode="horizontal" active-text-color="#ffffff"
+             background-color="#409eff" text-color="#fff">
+        <el-menu-item index="1">
+            <a href="index.html">首页</a>
+        </el-menu-item>
+        <el-menu-item index="2" v-if="userType === 1 || userType === 2">
+            <a href="#">土地管理</a>
+        </el-menu-item>
+        <el-menu-item index="3" v-if="userType === 1 || userType === 2">
+            <a href="material.html">生产材料</a>
+        </el-menu-item>
+        <el-menu-item index="4" v-if="userType === 1 || userType === 2">
+            <a href="fertilizer.html">配肥配药</a>
+        </el-menu-item>
+        <el-menu-item index="5">
+            <a href="#">生产计划</a>
+        </el-menu-item>
+        <el-menu-item index="6">
+            <a href="#">农作信息</a>
+        </el-menu-item>
+        <el-menu-item index="7">
+            <a href="#">实际采收</a>
+        </el-menu-item>
+        <el-submenu index="8">
+            <template slot="title">{{username}}</template>
+            <el-menu-item @click="logout" index="8-1">登出</el-menu-item>
+        </el-submenu>
+    </el-menu>
+    <el-container>
+        <el-main>
+            <el-button @click="dialogVisible = true" type="primary">添加培肥配药</el-button>
+            <el-table :data="fertilizers" style="width: 100%;">
+                <el-table-column prop="fdate" label="日期" sortable></el-table-column>
+                <el-table-column prop="fname" label="名称"></el-table-column>
+                <el-table-column prop="fee" label="劳务费(元)"></el-table-column>
+                <el-table-column prop="lossRate" label="总质量损失率(%)"></el-table-column>
+                <el-table-column label="操作">
+                    <template slot-scope="scope">
+                        <el-button @click="viewIngredient(scope.row)" type="primary" size="small">查看配料</el-button>
+                        <el-button @click="removeFI(scope.row)" type="danger" size="small">删除</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+            <el-dialog :visible.sync="dialogVisible" title="添加记录">
+                <el-form :model="form">
+                    <el-form-item :label-width="formLabelWidth" label="肥料或农药名称">
+                        <el-input placeholder="" type="text" v-model="form.fName"></el-input>
+                    </el-form-item>
+                    <el-form-item :label-width="formLabelWidth" label="日期">
+                        <el-date-picker type="date" v-model="form.fDate"></el-date-picker>
+                    </el-form-item>
+                    <el-form-item :label-width="formLabelWidth" label="劳务费">
+                        <el-input-number v-model="form.fee"></el-input-number>
+                    </el-form-item>
+                    <el-form-item :label-width="formLabelWidth" label="总质量损耗比">
+                        <el-input type="text" v-model="form.lossRate">
+                            <template slot="append">%</template>
+                        </el-input>
+                    </el-form-item>
+                    <el-button @click="dialogIngredientVisible = true" type="primary">添加原料</el-button>
+                    <el-table :data="form.ingredients" style="width: 100%">
+                        <el-table-column label="原料名称" prop="ingredientName"></el-table-column>
+                        <el-table-column label="数量" prop="amount"></el-table-column>
+                        <el-table-column label="操作">
+                            <template slot-scope="scope">
+                                <el-button @click="removeIngredient(scope.$index)" type="danger" size="small">删除
+                                </el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </el-form>
+                <div class="dialog-footer" slot="footer">
+                    <el-button @click="dialogVisible = false">取 消</el-button>
+                    <el-button @click="createFI" type="primary">确 定</el-button>
+                </div>
+            </el-dialog>
+            <el-dialog :visible.sync="dialogIngredientVisible" title="添加原料">
+                <el-form :model="ingredient">
+                    <el-form-item :label-width="formLabelWidth" label="原料名称">
+                        <el-select auto-complete="off" placeholder="请选择" v-model="ingredient.id">
+                            <el-option :key="item.id"
+                                       :label="item.ingredientName"
+                                       :value="item.id"
+                                       v-for="item in ingredients">
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item :label-width="formLabelWidth" label="数量">
+                        <el-input-number v-model="ingredient.amount"></el-input-number>
+                    </el-form-item>
+                </el-form>
+                <div class="dialog-footer" slot="footer">
+                    <el-button @click="dialogIngredientVisible = false">取 消</el-button>
+                    <el-button @click="addIngredient" type="primary">确 定</el-button>
+                </div>
+            </el-dialog>
+            <el-dialog :visible.syne="dialogViewVisible" title="原料">
+                <el-table :data="ingredientsFromFertilizer" style="width: 100%">
+                    <el-table-column label="名称" prop="ingredientName"></el-table-column>
+                    <el-table-column label="数量" prop="amount"></el-table-column>
+                </el-table>
+                <div class="dialog-footer" slot="footer">
+                    <el-button @click="dialogViewVisible = false" type="primary">确 定</el-button>
+                </div>
+            </el-dialog>
+        </el-main>
+    </el-container>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/vue-resource/1.5.1/vue-resource.js"></script>
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+
+<script>
+    var app = new Vue({
+        el: '#app',
+        data: {
+            activeIndex: '4',
+            userType: null,
+            username: null,
+            dialogVisible: false,
+            dialogIngredientVisible: false,
+            dialogViewVisible: false,
+            formLabelWidth: '120px',
+            fertilizers: null,
+            ingredients: null,
+            ingredientsFromFertilizer: null,
+            form: {
+                fName: '',
+                fDate: null,
+                fee: 0,
+                lossRate: 0,
+                ingredients: []
+            },
+            ingredient: {
+                ingredientName: '',
+                amount: 0,
+                id: null
+            }
+        },
+        methods: {
+            logout: function () {
+                this.$http.get('/logout').then(function () {
+                    window.location.href = '/login.html';
+                })
+            },
+            reloadDate: function () {
+                this.$http.get('/getAllFertilizersAndIngredients').then(function (response) {
+                    var resp = response.body.obj;
+                    this.ingredients = resp.ingredients;
+                    this.fertilizers = resp.fertilizers;
+                    console.log(resp);
+                })
+            },
+            clearForm: function () {
+                this.form.fName = '';
+                this.form.fDate = null;
+                this.form.fee = 0;
+                this.form.lossRate = 0;
+                this.form.ingredients = [];
+            },
+            addIngredient: function () {
+                for (var j = 0; j < this.form.ingredients.length; j++) {
+                    if (this.ingredient.id === this.form.ingredients[j].id) {
+                        this.$message({
+                            type: 'info',
+                            message: '已添加该原料'
+                        });
+                        this.dialogIngredientVisible = false;
+                        return;
+                    }
+                }
+                for (var i = 0; i < this.ingredients.length; i++) {
+                    if (this.ingredient.id === this.ingredients[i].id) {
+                        this.ingredient.ingredientName = this.ingredients[i].ingredientName;
+                        break;
+                    }
+                }
+                // 因为如果直接push的话, 是push this.ingredient的引用,会出现问题
+                var temp = {
+                    ingredientName: this.ingredient.ingredientName,
+                    amount: this.ingredient.amount,
+                    id: this.ingredient.id
+                };
+                this.form.ingredients.push(temp);
+                this.dialogIngredientVisible = false;
+            },
+            removeIngredient: function (index) {
+                this.form.ingredients.splice(index, 1);
+            },
+            createFI: function () {
+                this.dialogVisible = false;
+                var data = this.form;
+                this.$http.post('/createFI', data).then(function (response) {
+                    console.log(response.body);
+                    var resp = response.body;
+                    this.$message({
+                        type: 'success',
+                        message: resp.msg
+                    });
+                    if (200 === resp.status) {
+                        this.reloadDate();
+                        this.clearForm();
+                    }
+                });
+            },
+            removeFI: function (row) {
+                var fId = row.id;
+                var _this = this;
+                _this.$confirm('此操作将永久删除该记录,是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(function () {
+                    _this.$http.post('/removeFI', fId).then(function (value) {
+                        var resp = value.body;
+                        _this.$message({
+                            type: 'success',
+                            message: resp.msg
+                        });
+                        _this.reloadDate();
+                    })
+                }).catch(function () {
+                    _this.$message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });
+                });
+            },
+            viewIngredient: function (row) {
+                var _this = this;
+                _this.ingredientsFromFertilizer = null;
+                this.$http.post('/getIngredientsByFertilizer', row.id).then(function (value) {
+                    this.ingredientsFromFertilizer = value.body.obj;
+                    this.dialogViewVisible = true;
+                });
+            }
+        },
+        created: function () {
+            this.$http.get('/initUser').then(function (response) {
+                var resp = response.body;
+                var _this = this;
+                if (resp && resp.status === 200) {
+                    var user = resp.obj;
+                    _this.userType = user.userType;
+                    _this.username = user.username;
+                } else {
+                    alert(resp.msg);
+                    window.location.href = '/login.html';
+                }
+            });
+            this.reloadDate();
+        }
+    });
+</script>
+</body>
+</html>

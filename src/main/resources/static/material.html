@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>生产材料管理</title>
+    <link href="https://unpkg.com/element-ui/lib/theme-chalk/index.css" rel="stylesheet">
+</head>
+<body>
+<div id="app">
+    <el-menu :default-active="activeIndex" class="el-menu" mode="horizontal" active-text-color="#ffffff"
+             background-color="#409eff" text-color="#fff">
+        <el-menu-item index="1">
+            <a href="index.html">首页</a>
+        </el-menu-item>
+        <el-menu-item index="2" v-if="userType === 1 || userType === 2">
+            <a href="#">土地管理</a>
+        </el-menu-item>
+        <el-menu-item index="3" v-if="userType === 1 || userType === 2">
+            <a href="material.html">生产材料</a>
+        </el-menu-item>
+        <el-menu-item index="4" v-if="userType === 1 || userType === 2">
+            <a href="fertilizer.html">配肥配药</a>
+        </el-menu-item>
+        <el-menu-item index="5">
+            <a href="#">生产计划</a>
+        </el-menu-item>
+        <el-menu-item index="6">
+            <a href="#">农作信息</a>
+        </el-menu-item>
+        <el-menu-item index="7">
+            <a href="#">实际采收</a>
+        </el-menu-item>
+        <el-submenu index="8">
+            <template slot="title">{{username}}</template>
+            <el-menu-item @click="logout" index="8-1">登出</el-menu-item>
+        </el-submenu>
+    </el-menu>
+    <el-container>
+        <el-main>
+            <el-button @click="dialogVisible = true" type="primary">添加购买记录</el-button>
+            <el-table :data="purchaseRecords"
+                      style="width: 100%;">
+                <el-table-column label="购买日期" sortable prop="purchaseDate" width="180"></el-table-column>
+                <el-table-column label="材料名称" prop="materialName"></el-table-column>
+                <el-table-column label="单价(种子为g/￥, 原料为kg/￥)" sortable prop="price"></el-table-column>
+                <el-table-column label="数量" prop="amount"></el-table-column>
+                <el-table-column label="备注" prop="remarks"></el-table-column>
+                <el-table-column label="操作">
+                    <template slot-scope="scope">
+                        <el-button @click="removeRecord(scope.row)" type="danger" size="small">删除</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+            <el-dialog :visible.sync="dialogVisible" title="添加购买记录">
+                <el-form :model="form">
+                    <el-form-item :label-width="formLabelWidth" label="材料名称">
+                        <el-select autocomplete="off" placeholder="请选择" v-model="form.materialName">
+                            <el-option :key="item.materialName"
+                                       :label="item.materialName + ' --- ' + item.price"
+                                       :value="item.materialName"
+                                       v-for="item in materials">
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item :label-width="formLabelWidth" label="数量">
+                        <el-input placeholder="请输入数量" type="text" v-model="form.amount"></el-input>
+                    </el-form-item>
+                    <el-form-item :label-width="formLabelWidth" label="购买日期">
+                        <el-date-picker placeholder="选择购买日期"
+                                        type="date"
+                                        v-model="form.purchaseDate">
+                        </el-date-picker>
+                    </el-form-item>
+                    <el-form-item :label-width="formLabelWidth" label="备注">
+                        <el-input placeholder="备注" type="textarea" v-model="form.remarks"></el-input>
+                    </el-form-item>
+                </el-form>
+                <div class="dialog-footer" slot="footer">
+                    <el-button @click="dialogVisible = false">取 消</el-button>
+                    <el-button @click="createPurchaseRecord" type="primary">确 定</el-button>
+                </div>
+            </el-dialog>
+        </el-main>
+    </el-container>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/vue-resource/1.5.1/vue-resource.js"></script>
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+
+<script>
+    var app = new Vue({
+        el: '#app',
+        data: {
+            activeIndex: '3',
+            userType: null,
+            username: null,
+            dialogVisible: false,
+            materials: null,
+            purchaseRecords: null,
+            form: {
+                materialName: '',
+                amount: 0,
+                purchaseDate: null,
+                remarks: ''
+            },
+            formLabelWidth: '120px'
+        },
+        methods: {
+            logout: function () {
+                this.$http.get('/logout').then(function () {
+                    window.location.href = '/login.html';
+                })
+            },
+            createPurchaseRecord: function () {
+                this.dialogVisible = false;
+                var data = this.form;
+                this.$http.post('/createPurchaseRecord', data).then(function (response) {
+                    console.log(response.body);
+                    var resp = response.body;
+                    this.$message({
+                        type: 'success',
+                        message: resp.msg
+                    });
+                    if (200 === resp.status) {
+                        this.reloadDate();
+                        this.clearForm();
+                    }
+                });
+            },
+            reloadDate: function () {
+                this.$http.get('/getAllMaterialsAndRecords').then(function (response) {
+                    var resp = response.body.obj;
+                    var mTemp = resp.materials;
+                    for (var i = 0; i < mTemp.length; i++) {
+                        mTemp[i].price = mTemp[i].price / 100.0;
+                    }
+                    var pTemp = resp.purchaseRecords;
+                    for (var j = 0; j < pTemp.length; j++) {
+                        pTemp[j].price = pTemp[j].price / 100.0;
+                    }
+                    this.purchaseRecords = pTemp;
+                    this.materials = mTemp;
+
+                });
+            },
+            clearForm: function () {
+                this.form.materialName = '';
+                this.form.amount = 0;
+                this.form.remarks = '';
+                this.purchaseDate = null;
+            },
+            removeRecord: function (row) {
+                var rId = row.rid;
+                var _this = this;
+                _this.$confirm('此操作将永久删除该记录,是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(function () {
+                    _this.$http.post('/removeRecord', rId).then(function (value) {
+                        var resp = value.body;
+                        _this.$message({
+                            type: 'success',
+                            message: resp.msg
+                        });
+                        _this.reloadDate();
+                    })
+                }).catch(function () {
+                    _this.$message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });
+                });
+            }
+        },
+        created: function () {
+            this.$http.get('/initUser').then(function (response) {
+                var resp = response.body;
+                var _this = this;
+                if (resp && resp.status === 200) {
+                    var user = resp.obj;
+                    _this.userType = user.userType;
+                    _this.username = user.username;
+                } else {
+                    alert(resp.msg);
+                    window.location.href = '/login.html';
+                }
+            });
+            this.reloadDate();
+        }
+    });
+</script>
+</body>
+</html>

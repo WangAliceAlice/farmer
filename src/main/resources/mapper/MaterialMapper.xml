@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.feidian.farmer.dao.mapper.MaterialMapper">
+    <insert id="insertOne">
+        insert into purchase_record(materialName, amount, purchaseDate, remarks)
+            value (#{record.materialName}, #{record.amount}, #{record.purchaseDate},
+                   #{record.remarks})
+    </insert>
+
+    <delete id="deleteOne">
+        delete
+        from purchase_record
+        where rId = #{rId}
+    </delete>
+
+
+    <select id="selectAllMaterials" resultType="com.feidian.farmer.dao.entity.Material">
+        select *
+        from t_material
+        order by materialType
+    </select>
+
+    <select id="selectAllRecords" resultType="com.feidian.farmer.dao.entity.PurchaseRecord">
+        select rId, m.materialName materialName, amount, purchaseDate, remarks, price
+        from purchase_record p,
+             t_material m
+        where p.materialName = m.materialName
+        order by purchaseDate asc
+    </select>
+
+</mapper>

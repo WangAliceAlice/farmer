@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>首页</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+</head>
+
+<body>
+<div id="app">
+    <el-menu :default-active="activeIndex" class="el-menu" mode="horizontal" active-text-color="#ffffff"
+             background-color="#409eff" text-color="#fff">
+        <el-menu-item index="1">
+            <a href="index.html">首页</a>
+        </el-menu-item>
+        <el-menu-item index="2" v-if="userType === 1 || userType === 2">
+            <a href="#">土地管理</a>
+        </el-menu-item>
+        <el-menu-item index="3" v-if="userType === 1 || userType === 2">
+            <a href="material.html">生产材料</a>
+        </el-menu-item>
+        <el-menu-item index="4" v-if="userType === 1 || userType === 2">
+            <a href="fertilizer.html">配肥配药</a>
+        </el-menu-item>
+        <el-menu-item index="5">
+            <a href="#">生产计划</a>
+        </el-menu-item>
+        <el-menu-item index="6">
+            <a href="#">农作信息</a>
+        </el-menu-item>
+        <el-menu-item index="7">
+            <a href="#">实际采收</a>
+        </el-menu-item>
+        <el-submenu index="8">
+            <template slot="title">{{username}}</template>
+            <el-menu-item @click="logout" index="8-1">登出</el-menu-item>
+        </el-submenu>
+    </el-menu>
+    <el-container>
+        主页还没想好要写什么东西
+    </el-container>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/vue-resource/1.5.1/vue-resource.js"></script>
+<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+<script>
+    var app = new Vue({
+        el: '#app',
+        data: {
+            activeIndex: '1',
+            userType: null,
+            username: null
+        },
+        methods: {
+            logout: function () {
+                this.$http.get('/logout').then(function () {
+                    window.location.href = '/login.html';
+                })
+            }
+        },
+        created: function () {          // 用户定制用户菜单
+            this.$http.get('/initUser').then(function (response) {
+                console.log(response);
+                var resp = response.body;
+                var _this = this;
+                if (resp && resp.status === 200) {
+                    var user = resp.obj;
+                    _this.userType = user.userType;
+                    _this.username = user.username;
+                } else {
+                    alert(resp.msg);
+                    window.location.href = '/login.html';
+                }
+            });
+        }
+    });
+</script>
+</body>
+
+</html>

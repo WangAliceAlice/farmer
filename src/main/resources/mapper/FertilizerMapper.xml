@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.feidian.farmer.dao.mapper.FertilizerMapper">
+
+    <insert id="insertFertilizer" useGeneratedKeys="true" keyProperty="fertilizer.id"
+            parameterType="com.feidian.farmer.dao.entity.Fertilizer">
+        insert
+        into fertilizer(fDate, fName, fee, lossRate)
+        VALUES (#{fertilizer.fDate}, #{fertilizer.fName}, #{fertilizer.fee}, #{fertilizer.lossRate})
+    </insert>
+
+    <insert id="insertFIs">
+        insert into fertilizer_ingredient(fertilizerId, ingredientId, amount)
+        values
+        <foreach collection="fertilizerIngredients" item="item" index="index" separator=",">
+            (#{item.fertilizerId}, #{item.ingredientId}, #{item.amount})
+        </foreach>
+    </insert>
+
+    <delete id="deleteOne">
+        delete
+        from fertilizer
+        where id = #{fId}
+    </delete>
+
+    <select id="selectAllFI" resultType="com.feidian.farmer.dao.entity.FertilizerIngredient">
+        select fertilizerId,
+               fDate,
+               fName,
+               fee,
+               lossRate,
+               ingredientId,
+               ingredientName,
+               amount
+        from fertilizer
+                 left join fertilizer_ingredient fi on fertilizer.id = fi.fertilizerId
+                 left join t_ingredient on fi.ingredientId = t_ingredient.id
+        order by fertilizerId asc;
+    </select>
+    <select id="selectAllIngredients" resultType="com.feidian.farmer.dao.entity.Ingredient">
+        select id, ingredientName
+        from t_ingredient
+    </select>
+    <select id="selectAllFertilizers" resultType="com.feidian.farmer.dao.entity.Fertilizer">
+        select *
+        from fertilizer;
+    </select>
+    <select id="selectIngredientsByFertilizer" resultType="com.feidian.farmer.dao.entity.Ingredient">
+        select id, ingredientName, amount
+        from fertilizer_ingredient fi
+                 join t_ingredient on t_ingredient.id = fi.ingredientId
+        where fi.fertilizerId = #{fId}
+    </select>
+
+</mapper>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>请登录</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="Cache-Control" content="no-siteapp"/>
+    <link rel="stylesheet" href="http://cdn.amazeui.org/amazeui/2.7.2/css/amazeui.min.css"/>
+    <style>
+        .header {
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 200%;
+            color: #333;
+            margin-top: 30px;
+        }
+
+        .header p {
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <div class="am-g">
+        <h1>小农夫</h1>
+    </div>
+    <hr/>
+</div>
+<div class="am-g" id="app">
+    <div class="am-u-lg-6 am-u-md-8 am-u-sm-centered">
+        <span style="color: red;"> {{ message }} </span>
+        <br>
+        <br>
+        <form method="post" class="am-form">
+            <label for="username">账号:</label>
+            <input type="text" id="username" v-model="username">
+            <br>
+            <label for="password">密码:</label>
+            <input type="password" id="password" v-model="password">
+            <br>
+            <br/>
+        </form>
+        <button class="am-btn am-btn-primary am-btn-sm am-fl" @click="submitClick">登录</button>
+        <hr>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.bootcss.com/vue-resource/1.5.1/vue-resource.js"></script>
+<script>
+    var app = new Vue({
+        el: '#app',
+        data: {
+            message: '',
+            username: 'guest',
+            password: ''
+        },
+        methods: {
+            submitClick: function () {
+                var _this = this;
+                var data = {
+                    username: _this.username,
+                    password: _this.password
+                };
+                this.$http.post('/login_p', {data: JSON.stringify(data)}).then(function (response) {
+                    var resp = response.body;
+                    this.message = resp.msg;
+                    if (resp && resp.status === 200) {
+                        window.location.href = "/index.html";
+                    }
+                })
+            }
+        }
+    })
+</script>
+</body>
+</html>
