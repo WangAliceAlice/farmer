@@ -52,31 +52,6 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 <script src="https://cdn.bootcss.com/vue-resource/1.5.1/vue-resource.js"></script>
-<script>
-    var app = new Vue({
-        el: '#app',
-        data: {
-            message: '',
-            username: 'guest',
-            password: ''
-        },
-        methods: {
-            submitClick: function () {
-                var _this = this;
-                var data = {
-                    username: _this.username,
-                    password: _this.password
-                };
-                this.$http.post('/login_p', {data: JSON.stringify(data)}).then(function (response) {
-                    var resp = response.body;
-                    this.message = resp.msg;
-                    if (resp && resp.status === 200) {
-                        window.location.href = "/index.html";
-                    }
-                })
-            }
-        }
-    })
-</script>
+<script src="js/login.js"></script>
 </body>
 </html>
