@@ -7,8 +7,11 @@ import lombok.Setter;
 @Getter
 public class ResponseBean {
 
+    // 状态
     private Integer status;
+    // 信息
     private String msg;
+    // 返回的数据
     private Object obj;
 
     private ResponseBean() {

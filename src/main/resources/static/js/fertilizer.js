@@ -30,7 +30,7 @@ var app = new Vue({
                 window.location.href = '/login.html';
             })
         },
-        reloadDate: function () {
+        reloadData: function () {
             this.$http.get('/getAllFertilizersAndIngredients').then(function (response) {
                 var resp = response.body.obj;
                 this.ingredients = resp.ingredients;
@@ -85,7 +85,7 @@ var app = new Vue({
                     message: resp.msg
                 });
                 if (200 === resp.status) {
-                    this.reloadDate();
+                    this.reloadData();
                     this.clearForm();
                 }
             });
@@ -104,7 +104,7 @@ var app = new Vue({
                         type: 'success',
                         message: resp.msg
                     });
-                    _this.reloadDate();
+                    _this.reloadData();
                 })
             }).catch(function () {
                 _this.$message({
@@ -135,6 +135,6 @@ var app = new Vue({
                 window.location.href = '/login.html';
             }
         });
-        this.reloadDate();
+        this.reloadData();
     }
 });

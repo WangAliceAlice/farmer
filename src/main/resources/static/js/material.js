@@ -25,19 +25,18 @@ var app = new Vue({
             this.dialogVisible = false;
             var data = this.form;
             this.$http.post('/createPurchaseRecord', data).then(function (response) {
-                console.log(response.body);
                 var resp = response.body;
                 this.$message({
                     type: 'success',
                     message: resp.msg
                 });
                 if (200 === resp.status) {
-                    this.reloadDate();
+                    this.reloadData();
                     this.clearForm();
                 }
             });
         },
-        reloadDate: function () {
+        reloadData: function () {
             this.$http.get('/getAllMaterialsAndRecords').then(function (response) {
                 var resp = response.body.obj;
                 var mTemp = resp.materials;
@@ -73,7 +72,7 @@ var app = new Vue({
                         type: 'success',
                         message: resp.msg
                     });
-                    _this.reloadDate();
+                    _this.reloadData();
                 })
             }).catch(function () {
                 _this.$message({
@@ -96,6 +95,6 @@ var app = new Vue({
                 window.location.href = '/login.html';
             }
         });
-        this.reloadDate();
+        this.reloadData();
     }
 });

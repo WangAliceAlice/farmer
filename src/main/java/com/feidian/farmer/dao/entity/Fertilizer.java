@@ -6,13 +6,30 @@ import lombok.ToString;
 
 import java.sql.Date;
 
+/**
+ * 肥料后农药实体
+ */
+
 @Setter
 @Getter
-@ToString
 public class Fertilizer {
-    Long id;
-    Date fDate;
-    String fName;
-    Short fee;
-    Short lossRate;
+    private Long id;
+    private Date fDate;
+    private String fName;
+    private Short fee;
+    private Short lossRate;
+
+    public Fertilizer() {
+    }
+
+    @Override
+    public String toString() {
+        return "Fertilizer{" +
+                "id=" + id +
+                ", fDate=" + fDate +
+                ", fName='" + fName + '\'' +
+                ", fee=" + fee +
+                ", lossRate=" + lossRate +
+                '}';
+    }
 }

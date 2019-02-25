@@ -9,6 +9,10 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 
+/**
+ * 登录接口
+ */
+
 @RestController
 public class LoginController {
 

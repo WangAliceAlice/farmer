@@ -16,7 +16,6 @@ public class MaterialService {
     @Resource
     public MaterialMapper materialMapper;
 
-
     public Map<String, List> getAll() {
         Map<String, List> map = new HashMap<>();
         map.put("materials", materialMapper.selectAllMaterials());

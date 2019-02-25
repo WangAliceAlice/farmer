@@ -9,16 +9,27 @@ import lombok.ToString;
 import java.sql.Date;
 import java.util.List;
 
-@Setter
+/**
+ * 用于组装肥料和原料，以减少网络IO次数
+ */
 @Getter
-@ToString
+@Setter
 public class FIVO {
 
-    String fName;
-    Date fDate;
-    Short fee;
-    Short lossRate;
+    private String fName;
+    private Date fDate;
+    private Short fee;
+    private Short lossRate;
+    private List<Ingredient> ingredients;
 
-    List<Ingredient> ingredients;
-
+    @Override
+    public String toString() {
+        return "FIVO{" +
+                "fName='" + fName + '\'' +
+                ", fDate=" + fDate +
+                ", fee=" + fee +
+                ", lossRate=" + lossRate +
+                ", ingredients=" + ingredients +
+                '}';
+    }
 }
